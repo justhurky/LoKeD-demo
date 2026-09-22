@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HÖK AI</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f0f10;
+      --panel: #1a1a1f;
+      --panel-2: #202028;
+      --line: #2c2c36;
+      --text: #e2e2e8;
+      --muted: #8b8b9a;
+      --accent: #7c6af7;
+      --accent-2: #36d399;
+      --danger: #ff6b7a;
+      --warn: #f6c96b;
+      --radius: 8px;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 1180px;
+      min-height: 760px;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      overflow: hidden;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px minmax(620px, 1fr) 320px;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .sidebar {
+      background: #111114;
+      border-right: 1px solid var(--line);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 6px 12px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #42d6c4);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: white;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 750;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 1px;
+    }
+
+    .primary-action {
+      height: 38px;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 650;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav button {
+      height: 38px;
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+      text-align: left;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    .nav .glyph {
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      color: var(--muted);
+      background: #17171c;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .dot.ok { background: var(--accent-2); }
+
+    .main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at 50% -20%, rgba(124, 106, 247, .10), transparent 34%), var(--bg);
+    }
+
+    .topbar {
+      height: 58px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .content {
+      min-height: 0;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .view {
+      height: 100%;
+      display: none;
+      padding: 18px 24px;
+      overflow: auto;
+    }
+
+    .view.active { display: block; }
+
+    .chat-view {
+      height: 100%;
+      display: none;
+      grid-template-rows: 1fr auto;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .chat-view.active { display: grid; }
+
+    .messages {
+      overflow: auto;
+      padding: 28px 28px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      width: 100%;
+    }
+
+    .message.user { justify-content: flex-end; }
+
+    .bubble {
+      max-width: min(760px, 78%);
+      border-radius: var(--radius);
+      padding: 13px 15px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      white-space: pre-wrap;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .14);
+    }
+
+    .message.user .bubble {
+      background: var(--accent);
+      border-color: transparent;
+      color: white;
+    }
+
+    .bubble .model {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    details.sources {
+      max-width: min(760px, 78%);
+      margin-top: -10px;
+      margin-left: 0;
+      color: var(--muted);
+    }
+
+    details.sources summary {
+      cursor: pointer;
+      padding: 8px 0;
+      font-size: 12px;
+    }
+
+    .source {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+      background: rgba(26, 26, 31, .82);
+      margin-bottom: 8px;
+    }
+
+    .source strong {
+      display: block;
+      color: var(--text);
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .source code {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      word-break: break-all;
+      margin-bottom: 6px;
+    }
+
+    .composer {
+      padding: 14px 22px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(15, 15, 16, .92);
+    }
+
+    .composer-inner {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      align-items: end;
+      gap: 10px;
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #121216;
+      color: var(--text);
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      border-color: rgba(124, 106, 247, .78);
+      box-shadow: 0 0 0 3px rgba(124, 106, 247, .12);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .composer textarea {
+      min-height: 48px;
+      max-height: 150px;
+      border: 0;
+      background: transparent;
+      padding: 6px;
+      box-shadow: none;
+    }
+
+    .attached-file {
+      max-width: 960px;
+      margin: 0 auto 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(26, 26, 31, .78);
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .attached-file strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .btn {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: var(--radius);
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .btn:hover { border-color: #3d3d4a; }
+    .btn.accent { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn.danger { background: transparent; border-color: rgba(255, 107, 122, .45); color: var(--danger); }
+
+    .right-panel {
+      background: #111114;
+      border-left: 1px solid var(--line);
+      padding: 16px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 13px;
+    }
+
+    .panel h3,
+    .panel h4 {
+      margin: 0 0 10px;
+      font-size: 13px;
+    }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 560px;
+    }
+
+    .column {
+      background: rgba(26, 26, 31, .55);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .column h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .card-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .task-card,
+    .doc-row,
+    .person-row,
+    .result-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+    }
+
+    .task-card.overdue { border-color: rgba(255, 107, 122, .7); }
+
+    .task-card h4,
+    .person-row h4,
+    .doc-row h4 {
+      margin: 0 0 7px;
+      font-size: 13px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pill {
+      min-height: 22px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #15151a;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .dropzone {
+      border: 1px dashed #3c3c49;
+      border-radius: var(--radius);
+      padding: 18px;
+      background: rgba(26, 26, 31, .45);
+      text-align: center;
+    }
+
+    .dropzone.drag { border-color: var(--accent); background: rgba(124, 106, 247, .12); }
+
+    .banner {
+      display: none;
+      border: 1px solid rgba(246, 201, 107, .38);
+      background: rgba(246, 201, 107, .10);
+      color: #f8df9a;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      margin: 14px 24px 0;
+    }
+
+    .banner.visible { display: block; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-backdrop.visible { display: flex; }
+
+    .modal {
+      width: min(720px, calc(100vw - 48px));
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h3 {
+      margin: 0 0 14px;
+      font-size: 15px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">H</div>
+        <div>
+          <h1>HÖK AI</h1>
+          <span>lokális asszisztens</span>
+        </div>
+      </div>
+      <button class="primary-action" id="newChatBtn">+ Új beszélgetés</button>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="status-row"><span><i class="dot" id="ollamaDot"></i>Ollama</span><span id="ollamaText">ellenőrzés</span></div>
+        <div class="status-row"><span>Modell</span><span id="modelText">qwen3:14b</span></div>
+        <div class="status-row"><span>Tudás</span><span id="knowledgeText">0 dokumentum</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h2 id="viewTitle">Chat</h2>
+        <div class="toolbar" id="viewToolbar"></div>
+      </div>
+      <div class="banner" id="ollamaBanner">Ollama nem fut — indítsd el: <code>ollama serve</code></div>
+      <section class="content">
+        <div id="view-chat" class="chat-view active">
+          <div class="messages" id="messages"></div>
+          <div class="composer">
+            <input class="hidden" type="file" id="chatFileInput" accept=".txt,.md,.csv,.docx,.docm,.pdf,.xlsx,.xlsm">
+            <div class="attached-file hidden" id="attachedFile"></div>
+            <div class="composer-inner">
+              <textarea id="chatInput" spellcheck="true" placeholder="Kérdezz az indexelt HÖK/EHÖK anyagokról"></textarea>
+              <button class="btn" id="attachFileBtn">Fájl</button>
+              <button class="btn" id="thinkBtn">/think</button>
+              <button class="btn accent" id="sendBtn">Küldés</button>
+            </div>
+          </div>
+        </div>
+        <div id="view-feladatok" class="view"></div>
+        <div id="view-meeting" class="view"></div>
+        <div id="view-dokumentumok" class="view"></div>
+        <div id="view-emberek" class="view"></div>
+        <div id="view-attekinto" class="view"></div>
+        <div id="view-beallitasok" class="view"></div>
+      </section>
+    </main>
+
+    <aside class="right-panel" id="rightPanel">
+      <div class="panel-title">
+        <h3>Kontextus</h3>
+        <button class="btn" id="refreshContextBtn">Frissítés</button>
+      </div>
+      <div class="panel">
+        <h4>Ma figyelendő</h4>
+        <div id="contextTasks" class="stack small muted"></div>
+      </div>
+      <div class="panel">
+        <h4>Utóbbi döntések</h4>
+        <div id="contextDecisions" class="stack small muted"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <script>
+    const views = [
+      ["chat", "Chat", "AI"],
+      ["feladatok", "Feladatok", "FK"],
+      ["meeting", "Meeting elemző", "ME"],
+      ["dokumentumok", "Dokumentumok", "DK"],
+      ["emberek", "Emberek", "EM"],
+      ["attekinto", "Áttekintő", "AT"],
+      ["beallitasok", "Beállítások", "BE"]
+    ];
+
+    const state = {
+      active: "chat",
+      health: null,
+      tasks: [],
+      people: [],
+      documents: [],
+      dashboard: null,
+      meetingAnalysis: null,
+      chatFile: null,
+      think: false
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const api = async (url, options = {}) => {
+      const response = await fetch(url, {
+        ...options,
+        headers: {"Content-Type": "application/json", ...(options.headers || {})}
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        let message = text;
+        try { message = JSON.parse(text).detail || text; } catch {}
+        throw new Error(message);
+      }
+      return response.json();
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function initNav() {
+      $("#nav").innerHTML = views.map(([id, label, glyph]) => `
+        <button data-view="${id}" class="${id === state.active ? "active" : ""}">
+          <span class="glyph">${glyph}</span><span>${label}</span>
+        </button>
+      `).join("");
+      $("#nav").addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-view]");
+        if (!button) return;
+        setView(button.dataset.view);
+      });
+    }
+
+    async function setView(id) {
+      state.active = id;
+      for (const [viewId, label] of views) {
+        const el = $(`#view-${viewId}`);
+        el.classList.toggle("active", viewId === id);
+        if (viewId === id) $("#viewTitle").textContent = label;
+      }
+      document.querySelectorAll("#nav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === id);
+      });
+      await renderActiveView();
+    }
+
+    async function refreshHealth() {
+      try {
+        state.health = await api("/api/health");
+        const adapter = state.health.peft_adapter || {};
+        $("#ollamaDot").classList.toggle("ok", !!state.health.ollama);
+        $("#ollamaText").textContent = state.health.ollama ? "online" : "offline";
+        $("#modelText").textContent = `${state.health.chat_model || "qwen3:14b"}${adapter.online ? " · PEFT" : ""}`;
+        $("#knowledgeText").textContent = `${state.health.knowledge.documents} dokumentum`;
+        $("#ollamaBanner").classList.toggle("visible", !state.health.ollama);
+      } catch {
+        $("#ollamaText").textContent = "offline";
+        $("#ollamaBanner").classList.add("visible");
+      }
+    }
+
+    async function refreshContext() {
+      try {
+        state.dashboard = await api("/api/dashboard");
+        $("#contextTasks").innerHTML = (state.dashboard.urgent_tasks || []).slice(0, 5).map(task => `
+          <div>${escapeHtml(task.title)}<br><span class="muted">${escapeHtml(task.owner || "nincs felelős")} · ${escapeHtml(task.deadline || "nincs határidő")}</span></div>
+        `).join("") || "Nincs kiemelt feladat.";
+        $("#contextDecisions").innerHTML = (state.dashboard.decisions || []).slice(0, 5).map(decision => `
+          <div>${escapeHtml(decision.text)}<br><span class="muted">${escapeHtml(decision.date || "dátum nélkül")}</span></div>
+        `).join("") || "Nincs rögzített döntés.";
+      } catch {
+        $("#contextTasks").textContent = "Nem sikerült frissíteni.";
+      }
+    }
+
+    function addMessage(role, text) {
+      const wrapper = document.createElement("div");
+      wrapper.className = `message ${role}`;
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+      wrapper.appendChild(bubble);
+      $("#messages").appendChild(wrapper);
+      $("#messages").scrollTop = $("#messages").scrollHeight;
+      return bubble;
+    }
+
+    function renderSources(sources) {
+      if (!sources || !sources.length) return "";
+      return `
+        <details class="sources">
+          <summary>Források (${sources.length})</summary>
+          ${sources.map(source => `
+            <div class="source">
+              <strong>${escapeHtml(source.document_name || source.id)} · ${Number(source.score || 0).toFixed(2)}</strong>
+              <code>${escapeHtml(source.path || "")}</code>
+              <div>${escapeHtml(source.paragraph || "")}</div>
+              <div>${escapeHtml((source.snippet || "").slice(0, 360))}</div>
+            </div>
+          `).join("")}
+        </details>
+      `;
+    }
+
+    function formatAnswer(raw) {
+      const text = escapeHtml(raw);
+      return text.replace(/&lt;think&gt;([\s\S]*?)&lt;\/think&gt;/g, (_match, inner) => `
+        <details class="source" open>
+          <summary>Gondolkodási folyamat</summary>
+          <em>${inner}</em>
+        </details>
+      `);
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) return "0 B";
+      const units = ["B", "KB", "MB", "GB"];
+      let value = bytes;
+      let index = 0;
+      while (value >= 1024 && index < units.length - 1) {
+        value /= 1024;
+        index += 1;
+      }
+      return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
+    }
+
+    function renderAttachedFile() {
+      const box = $("#attachedFile");
+      const file = state.chatFile;
+      if (!file) {
+        box.classList.add("hidden");
+        box.innerHTML = "";
+        return;
+      }
+      box.classList.remove("hidden");
+      box.innerHTML = `
+        <span><strong>${escapeHtml(file.name)}</strong> · ${formatFileSize(file.size)}</span>
+        <button class="btn" id="removeChatFileBtn">Eltávolítás</button>
+      `;
+      $("#removeChatFileBtn").onclick = clearChatFile;
+    }
+
+    function clearChatFile() {
+      state.chatFile = null;
+      $("#chatFileInput").value = "";
+      renderAttachedFile();
+    }
+
+    async function sendChat() {
+      const input = $("#chatInput");
+      let message = input.value.trim();
+      if (!message && state.chatFile) message = "Foglaldd össze a feltöltött fájlt, és emeld ki a fontos teendőket.";
+      if (!message) return;
+      if (state.chatFile) return sendChatWithFile(message);
+      if (state.think && !message.toLowerCase().startsWith("/think")) message = `/think ${message}`;
+      input.value = "";
+      addMessage("user", message);
+      const bubble = addMessage("assistant", "");
+      let buffer = "";
+      let sources = [];
+      try {
+        const response = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({message})
+        });
+        if (!response.ok || !response.body) throw new Error(await response.text());
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let pending = "";
+        while (true) {
+          const {value, done} = await reader.read();
+          if (done) break;
+          pending += decoder.decode(value, {stream: true});
+          const lines = pending.split("\n");
+          pending = lines.pop();
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            const item = JSON.parse(line);
+            if (item.type === "meta") sources = item.sources || [];
+            if (item.type === "token") {
+              buffer += item.text;
+              bubble.textContent = buffer;
+              $("#messages").scrollTop = $("#messages").scrollHeight;
+            }
+            if (item.type === "error") bubble.textContent = `Hiba: ${item.error}`;
+            if (item.type === "done" && item.model) {
+              const model = document.createElement("span");
+              model.className = "model";
+              model.textContent = `Modell: ${item.model}`;
+              bubble.appendChild(model);
+            }
+          }
+        }
+        bubble.innerHTML = formatAnswer(buffer);
+        const model = document.createElement("span");
+        model.className = "model";
+        model.textContent = "Forrásalapú válasz";
+        bubble.appendChild(model);
+        const sourcesNode = document.createElement("div");
+        sourcesNode.innerHTML = renderSources(sources);
+        $("#messages").appendChild(sourcesNode);
+      } catch (error) {
+        bubble.textContent = `Hiba: ${error.message}`;
+      }
+      $("#messages").scrollTop = $("#messages").scrollHeight;
+    }
+
+    async function sendChatWithFile(message) {
+      const file = state.chatFile;
+      if (!file) return;
+      $("#chatInput").value = "";
+      addMessage("user", `${message}\n\nCsatolt fájl: ${file.name}`);
+      const bubble = addMessage("assistant", "Fájl feldolgozása...");
+      const form = new FormData();
+      form.append("instruction", message);
+      form.append("file", file);
+      form.append("index", "true");
+      try {
+        const response = await fetch("/api/chat/file", {method: "POST", body: form});
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+        bubble.innerHTML = formatAnswer(data.answer || "");
+        const model = document.createElement("span");
+        model.className = "model";
+        const fileInfo = data.file?.truncated ? " · hosszú fájl: részletekkel dolgozott" : "";
+        model.textContent = `Modell: ${data.model || "ismeretlen"} · Fájl: ${data.file?.name || file.name}${fileInfo}`;
+        bubble.appendChild(model);
+        const sourcesNode = document.createElement("div");
+        sourcesNode.innerHTML = renderSources(data.sources || []);
+        $("#messages").appendChild(sourcesNode);
+        clearChatFile();
+        refreshHealth();
+      } catch (error) {
+        bubble.textContent = `Hiba: ${error.message}`;
+      }
+      $("#messages").scrollTop = $("#messages").scrollHeight;
+    }
+
+    async function renderActiveView() {
+      if (state.active === "feladatok") return renderTasks();
+      if (state.active === "meeting") return renderMeeting();
+      if (state.active === "dokumentumok") return renderDocuments();
+      if (state.active === "emberek") return renderPeople();
+      if (state.active === "attekinto") return renderDashboard();
+      if (state.active === "beallitasok") return renderSettings();
+      $("#viewToolbar").innerHTML = "";
+    }
+
+    async function renderTasks() {
+      const data = await api("/api/tasks");
+      state.tasks = data.tasks || [];
+      state.people = (await api("/api/people").catch(() => ({people: []}))).people || [];
+      $("#viewToolbar").innerHTML = `
+        <button class="btn accent" id="addTaskBtn">Új feladat</button>
+        <button class="btn" onclick="location.href='/api/tasks/export?format=csv'">CSV</button>
+        <button class="btn" onclick="location.href='/api/tasks/export?format=json'">JSON</button>
+        <button class="btn" onclick="location.href='/api/tasks/export?format=pdf'">PDF</button>
+      `;
+      $("#addTaskBtn").onclick = () => openTaskModal();
+      const columns = ["Nyitott", "Folyamatban", "Kész"];
+      $("#view-feladatok").innerHTML = `
+        <div class="kanban">
+          ${columns.map(status => `
+            <section class="column">
+              <h3><span>${status}</span><span>${state.tasks.filter(t => t.status === status).length}</span></h3>
+              <div class="card-list">
+                ${state.tasks.filter(t => t.status === status).map(renderTaskCard).join("") || `<div class="small muted">Nincs elem.</div>`}
+              </div>
+            </section>
+          `).join("")}
+        </div>
+      `;
+      document.querySelectorAll("[data-edit-task]").forEach(btn => btn.onclick = () => {
+        openTaskModal(state.tasks.find(task => task.id === btn.dataset.editTask));
+      });
+      document.querySelectorAll("[data-task-status]").forEach(select => select.onchange = async () => {
+        await api(`/api/tasks/${select.dataset.taskStatus}`, {method: "PUT", body: JSON.stringify({status: select.value})});
+        renderTasks(); refreshContext();
+      });
+    }
+
+    function renderTaskCard(task) {
+      return `
+        <article class="task-card">
+          <h4>${escapeHtml(task.title)}</h4>
+          <div class="meta">
+            <span class="pill">${escapeHtml(task.owner || "nincs felelős")}</span>
+            <span class="pill">${escapeHtml(task.deadline || "nincs határidő")}</span>
+            <span class="pill">${escapeHtml(task.priority || "közepes")}</span>
+          </div>
+          ${task.source_sentence ? `<p class="small muted">${escapeHtml(task.source_sentence)}</p>` : ""}
+          <div class="row" style="margin-top:10px">
+            <select data-task-status="${task.id}">
+              ${["Nyitott", "Folyamatban", "Kész"].map(s => `<option ${task.status === s ? "selected" : ""}>${s}</option>`).join("")}
+            </select>
+            <button class="btn" data-edit-task="${task.id}">Szerkesztés</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function openTaskModal(task = null) {
+      const modal = $("#modal");
+      modal.innerHTML = `
+        <h3>${task ? "Feladat szerkesztése" : "Új feladat"}</h3>
+        <div class="grid two">
+          <div class="field"><label>Cím</label><input id="taskTitle" value="${escapeHtml(task?.title || "")}"></div>
+          <div class="field"><label>Felelős</label><input id="taskOwner" list="peopleList" value="${escapeHtml(task?.owner || "")}"></div>
+          <div class="field"><label>Határidő</label><input id="taskDeadline" type="date" value="${escapeHtml(task?.deadline || "")}"></div>
+          <div class="field"><label>Prioritás</label><select id="taskPriority">${["alacsony", "közepes", "magas", "sürgős"].map(p => `<option ${task?.priority === p ? "selected" : ""}>${p}</option>`).join("")}</select></div>
+          <div class="field"><label>Státusz</label><select id="taskStatus">${["Nyitott", "Folyamatban", "Kész"].map(s => `<option ${task?.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>
+          <div class="field"><label>Kapcsolódó döntés</label><input id="taskDecision" value="${escapeHtml(task?.related_decision || "")}"></div>
+        </div>
+        <div class="field" style="margin-top:12px"><label>Leírás</label><textarea id="taskDescription">${escapeHtml(task?.description || "")}</textarea></div>
+        <div class="field" style="margin-top:12px"><label>Forrásmondat</label><textarea id="taskSource">${escapeHtml(task?.source_sentence || "")}</textarea></div>
+        <datalist id="peopleList">${state.people.map(p => `<option value="${escapeHtml(p.name)}"></option>`).join("")}</datalist>
+        <div class="row" style="justify-content:flex-end;margin-top:14px">
+          ${task ? `<button class="btn danger" id="deleteTaskBtn">Törlés</button>` : ""}
+          <button class="btn" id="closeModalBtn">Mégse</button>
+          <button class="btn accent" id="saveTaskBtn">Mentés</button>
+        </div>
+      `;
+      showModal();
+      $("#closeModalBtn").onclick = hideModal;
+      $("#saveTaskBtn").onclick = async () => {
+        const payload = {
+          title: $("#taskTitle").value,
+          owner: $("#taskOwner").value,
+          deadline: $("#taskDeadline").value,
+          priority: $("#taskPriority").value,
+          status: $("#taskStatus").value,
+          description: $("#taskDescription").value,
+          source_sentence: $("#taskSource").value,
+          related_decision: $("#taskDecision").value
+        };
+        if (task) await api(`/api/tasks/${task.id}`, {method: "PUT", body: JSON.stringify(payload)});
+        else await api("/api/tasks", {method: "POST", body: JSON.stringify(payload)});
+        hideModal(); renderTasks(); refreshContext();
+      };
+      if (task) $("#deleteTaskBtn").onclick = async () => {
+        await api(`/api/tasks/${task.id}`, {method: "DELETE"});
+        hideModal(); renderTasks(); refreshContext();
+      };
+    }
+
+    async function renderMeeting() {
+      $("#viewToolbar").innerHTML = `<button class="btn accent" id="analyzeMeetingBtn">Elemzés</button><button class="btn" id="generateMinutesBtn">Jegyzőkönyv</button>`;
+      $("#view-meeting").innerHTML = `
+        <div class="split">
+          <div class="stack">
+            <textarea id="meetingText" style="min-height:420px" placeholder="Meetingjegyzet szövege"></textarea>
+            <div class="row">
+              <input type="file" id="meetingFile" accept=".txt,.md,.docx,.docm">
+              <input type="file" id="audioFile" accept="audio/*">
+              <button class="btn" id="transcribeBtn">Hang átírása</button>
+            </div>
+          </div>
+          <div id="meetingResults" class="stack">${renderMeetingResult()}</div>
+        </div>
+      `;
+      $("#analyzeMeetingBtn").onclick = analyzeMeeting;
+      $("#generateMinutesBtn").onclick = generateMinutes;
+      $("#meetingFile").onchange = loadMeetingFile;
+      $("#transcribeBtn").onclick = transcribeAudio;
+    }
+
+    function renderMeetingResult() {
+      const analysis = state.meetingAnalysis;
+      if (!analysis) return `<div class="panel muted">Nincs elemzés.</div>`;
+      return `
+        <div class="panel"><h3>Káosz-index: ${escapeHtml(analysis.kaosz_index || 0)}</h3><div class="muted small">${(analysis.resztvevok || []).map(escapeHtml).join(", ")}</div></div>
+        <div class="panel"><h3>Feladatok</h3>${(analysis.feladatok || []).map(item => `<div class="result-card"><strong>${escapeHtml(item.cim)}</strong><div class="meta"><span>${escapeHtml(item.felelos || "nincs felelős")}</span><span>${escapeHtml(item["hataridő"] || "")}</span><span>${escapeHtml(item.prioritas || "")}</span></div></div>`).join("") || "<span class='muted small'>Nincs.</span>"}<button class="btn accent" id="importTasksBtn" style="margin-top:10px">Importálás feladatokba</button></div>
+        <div class="panel"><h3>Döntések</h3>${(analysis.dontesek || []).map(item => `<div class="result-card">${escapeHtml(item.szoveg)}</div>`).join("") || "<span class='muted small'>Nincs.</span>"}</div>
+        <div class="panel"><h3>Kérdések</h3>${(analysis.kerdesek || []).map(item => `<div class="result-card">${escapeHtml(item.szoveg)}</div>`).join("") || "<span class='muted small'>Nincs.</span>"}</div>
+        <div class="panel"><h3>Blokkolók</h3>${(analysis.blokkatok || []).map(item => `<div class="result-card">${escapeHtml(item.szoveg)}<br><span class="muted small">${escapeHtml(item.megoldas_javaslat || "")}</span></div>`).join("") || "<span class='muted small'>Nincs.</span>"}</div>
+      `;
+    }
+
+    async function analyzeMeeting() {
+      const text = $("#meetingText").value.trim();
+      if (!text) return;
+      $("#meetingResults").innerHTML = `<div class="panel muted">Elemzés folyamatban...</div>`;
+      try {
+        const data = await api("/api/meeting/analyze", {method: "POST", body: JSON.stringify({text, save: true})});
+        state.meetingAnalysis = data.analysis;
+        $("#meetingResults").innerHTML = renderMeetingResult();
+        const importBtn = $("#importTasksBtn");
+        if (importBtn) importBtn.onclick = importMeetingTasks;
+        refreshContext();
+      } catch (error) {
+        $("#meetingResults").innerHTML = `<div class="panel" style="color:var(--danger)">Hiba: ${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    async function generateMinutes() {
+      const text = $("#meetingText").value.trim();
+      if (!text) return;
+      $("#meetingResults").innerHTML = `<div class="panel muted">Jegyzőkönyv készül...</div>`;
+      try {
+        const data = await api("/api/meeting/minutes", {method: "POST", body: JSON.stringify({text})});
+        $("#meetingResults").innerHTML = `
+          <div class="panel">
+            <h3>Hivatalos dokumentáció</h3>
+            <div class="small muted">Modell: ${escapeHtml(data.model || "")}</div>
+          </div>
+          <div class="result-card" style="white-space:pre-wrap">${escapeHtml(data.minutes || "")}</div>
+        `;
+      } catch (error) {
+        $("#meetingResults").innerHTML = `<div class="panel" style="color:var(--danger)">Hiba: ${escapeHtml(error.message)}</div>`;
+      }
+    }
+
+    async function importMeetingTasks() {
+      if (!state.meetingAnalysis) return;
+      await api("/api/tasks/import", {method: "POST", body: JSON.stringify({feladatok: state.meetingAnalysis.feladatok || []})});
+      await renderTasks();
+      await refreshContext();
+      setView("feladatok");
+    }
+
+    async function loadMeetingFile() {
+      const file = $("#meetingFile").files[0];
+      if (!file) return;
+      const data = new FormData();
+      data.append("file", file);
+      const response = await fetch("/api/meeting/load-file", {method: "POST", body: data});
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Fájlhiba");
+      $("#meetingText").value = result.text || "";
+    }
+
+    async function transcribeAudio() {
+      const file = $("#audioFile").files[0];
+      if (!file) return;
+      const data = new FormData();
+      data.append("file", file);
+      $("#meetingText").value = "Átirat készül...";
+      const response = await fetch("/api/meeting/transcribe", {method: "POST", body: data});
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail || "Átirathiba");
+      $("#meetingText").value = result.transcript.text || "";
+    }
+
+    async function renderDocuments() {
+      const data = await api("/api/documents");
+      state.documents = data.documents || [];
+      $("#viewToolbar").innerHTML = `<button class="btn" id="indexRegsBtn">TVSZ/TJSZ frissítés</button>`;
+      $("#view-dokumentumok").innerHTML = `
+        <div class="split">
+          <div class="stack">
+            <div class="dropzone" id="dropzone">
+              <input type="file" id="docUpload" multiple accept=".txt,.md,.csv,.docx,.docm,.pdf,.xlsx,.xlsm">
+            </div>
+            <div class="panel">
+              <div class="grid two">
+                <div class="field"><label>Mappa útvonala</label><input id="indexPath" value=""></div>
+                <div class="field"><label>Típus</label><select id="docType"><option value="">Összes</option><option value="szabalyzat">Szabályzat</option><option value="jegyzokonyv">Jegyzőkönyv</option><option value="feladatlista">Excel / feladatlista</option><option value="pdf">PDF</option><option value="docx">DOCX</option></select></div>
+                <div class="field"><label>Dátum</label><input id="docDate" type="date"></div>
+                <div class="field"><label>Forrás-mappa</label><input id="docFolder"></div>
+              </div>
+              <div class="row" style="margin-top:10px"><button class="btn accent" id="indexPathBtn">Indexelés</button><input id="docKeyword" placeholder="Keresés"></div>
+            </div>
+            <div class="panel" id="pinnedRegs"></div>
+            <div class="stack" id="docList"></div>
+          </div>
+          <div class="panel">
+            <h3>Tudásbázis</h3>
+            <div class="grid two">
+              <div><strong>${data.stats.documents}</strong><br><span class="muted small">dokumentum</span></div>
+              <div><strong>${data.stats.chunks}</strong><br><span class="muted small">chunk</span></div>
+            </div>
+            <div class="field" style="margin-top:14px"><label>Keresőkérdés</label><input id="kbSearch"></div>
+            <button class="btn" id="kbSearchBtn" style="margin-top:8px">Keresés</button>
+            <div id="kbHits" class="stack" style="margin-top:12px"></div>
+          </div>
+        </div>
+      `;
+      renderDocList();
+      $("#docUpload").onchange = uploadDocuments;
+      $("#indexPathBtn").onclick = indexFolder;
+      $("#docKeyword").oninput = renderDocList;
+      $("#docType").onchange = renderDocList;
+      $("#docDate").onchange = renderDocList;
+      $("#docFolder").oninput = renderDocList;
+      $("#kbSearchBtn").onclick = searchKb;
+      $("#indexRegsBtn").onclick = async () => { await api("/api/documents/index-regulations", {method: "POST", body: "{}"}); renderDocuments(); };
+    }
+
+    function renderDocList() {
+      const keyword = ($("#docKeyword")?.value || "").toLowerCase();
+      const type = $("#docType")?.value || "";
+      const date = $("#docDate")?.value || "";
+      const folder = ($("#docFolder")?.value || "").toLowerCase();
+      const pinned = state.documents.filter(doc => /tvsz|tjsz/i.test(`${doc.name} ${doc.regulation_name || ""}`));
+      $("#pinnedRegs").innerHTML = `<h3>TVSZ / TJSZ</h3>${pinned.map(doc => `<div class="small">${escapeHtml(doc.name)} · ${escapeHtml(doc.status)} · ${escapeHtml((doc.indexed_at || "").slice(0, 10))}</div>`).join("") || "<span class='muted small'>Nincs indexelt TVSZ/TJSZ.</span>"}`;
+      const docs = state.documents.filter(doc =>
+        (!keyword || `${doc.name} ${doc.path}`.toLowerCase().includes(keyword)) &&
+        (!type || doc.type === type) &&
+        (!date || (doc.updated_at || "").slice(0, 10) === date) &&
+        (!folder || (doc.source_folder || "").toLowerCase().includes(folder))
+      );
+      $("#docList").innerHTML = docs.map(doc => `
+        <article class="doc-row">
+          <h4>${escapeHtml(doc.name)}</h4>
+          <div class="meta"><span class="pill">${escapeHtml(doc.type)}</span><span class="pill">${escapeHtml(doc.status)}</span><span class="pill">${doc.chunks} chunk</span></div>
+          <div class="small muted" style="margin-top:7px">${escapeHtml(doc.path)}</div>
+          ${doc.error ? `<div class="small" style="color:var(--danger)">${escapeHtml(doc.error)}</div>` : ""}
+        </article>
+      `).join("") || `<div class="panel muted">Nincs dokumentum.</div>`;
+    }
+
+    async function uploadDocuments() {
+      for (const file of $("#docUpload").files) {
+        const data = new FormData();
+        data.append("file", file);
+        const response = await fetch("/api/documents/upload", {method: "POST", body: data});
+        if (!response.ok) console.warn(await response.text());
+      }
+      renderDocuments(); refreshHealth();
+    }
+
+    async function indexFolder() {
+      const path = $("#indexPath").value.trim();
+      if (!path) return;
+      await api("/api/documents/index-path", {method: "POST", body: JSON.stringify({path})});
+      renderDocuments(); refreshHealth();
+    }
+
+    async function searchKb() {
+      const query = $("#kbSearch").value.trim();
+      if (!query) return;
+      const data = await api(`/api/documents/search?q=${encodeURIComponent(query)}&limit=8`);
+      $("#kbHits").innerHTML = (data.hits || []).map(source => `
+        <div class="source"><strong>${escapeHtml(source.document_name)} · ${Number(source.score).toFixed(2)}</strong><code>${escapeHtml(source.path)}</code>${escapeHtml(source.snippet)}</div>
+      `).join("") || `<div class="muted small">Nincs találat.</div>`;
+    }
+
+    async function renderPeople() {
+      const data = await api("/api/people");
+      state.people = data.people || [];
+      $("#viewToolbar").innerHTML = `<button class="btn accent" id="addPersonBtn">Új személy</button>`;
+      $("#view-emberek").innerHTML = `
+        <div class="stack">
+          <input id="peopleSearch" placeholder="Keresés">
+          <div class="grid two" id="peopleList"></div>
+        </div>
+      `;
+      $("#addPersonBtn").onclick = () => openPersonModal();
+      $("#peopleSearch").oninput = renderPeopleList;
+      renderPeopleList();
+    }
+
+    function renderPeopleList() {
+      const q = ($("#peopleSearch")?.value || "").toLowerCase();
+      const people = state.people.filter(person => `${person.name} ${person.role} ${person.committee}`.toLowerCase().includes(q));
+      $("#peopleList").innerHTML = people.map(person => `
+        <article class="person-row">
+          <h4>${escapeHtml(person.name)}</h4>
+          <div class="meta"><span class="pill">${escapeHtml(person.role || "nincs szerepkör")}</span><span class="pill">${escapeHtml(person.committee || "nincs bizottság")}</span></div>
+          <div class="small muted" style="margin-top:8px">${escapeHtml((person.aliases || []).join(", "))}</div>
+          <button class="btn" data-edit-person="${person.id}" style="margin-top:10px">Szerkesztés</button>
+        </article>
+      `).join("") || `<div class="panel muted">Nincs személy.</div>`;
+      document.querySelectorAll("[data-edit-person]").forEach(btn => btn.onclick = () => openPersonModal(state.people.find(p => p.id === btn.dataset.editPerson)));
+    }
+
+    function openPersonModal(person = null) {
+      $("#modal").innerHTML = `
+        <h3>${person ? "Személy szerkesztése" : "Új személy"}</h3>
+        <div class="grid two">
+          <div class="field"><label>Név</label><input id="personName" value="${escapeHtml(person?.name || "")}"></div>
+          <div class="field"><label>Szerepkör</label><input id="personRole" value="${escapeHtml(person?.role || "")}"></div>
+          <div class="field"><label>Bizottság</label><input id="personCommittee" value="${escapeHtml(person?.committee || "")}"></div>
+          <div class="field"><label>Email</label><input id="personEmail" value="${escapeHtml(person?.email || "")}"></div>
+          <div class="field"><label>Telefon</label><input id="personPhone" value="${escapeHtml(person?.phone || "")}"></div>
+          <div class="field"><label>Aliasok</label><input id="personAliases" value="${escapeHtml((person?.aliases || []).join(", "))}"></div>
+        </div>
+        <div class="field" style="margin-top:12px"><label>Megjegyzés</label><textarea id="personNotes">${escapeHtml(person?.notes || "")}</textarea></div>
+        <div class="row" style="justify-content:flex-end;margin-top:14px">
+          ${person ? `<button class="btn danger" id="deletePersonBtn">Törlés</button>` : ""}
+          <button class="btn" id="closeModalBtn">Mégse</button>
+          <button class="btn accent" id="savePersonBtn">Mentés</button>
+        </div>
+      `;
+      showModal();
+      $("#closeModalBtn").onclick = hideModal;
+      $("#savePersonBtn").onclick = async () => {
+        const payload = {
+          name: $("#personName").value,
+          role: $("#personRole").value,
+          committee: $("#personCommittee").value,
+          email: $("#personEmail").value,
+          phone: $("#personPhone").value,
+          aliases: $("#personAliases").value,
+          notes: $("#personNotes").value
+        };
+        if (person) await api(`/api/people/${person.id}`, {method: "PUT", body: JSON.stringify(payload)});
+        else await api("/api/people", {method: "POST", body: JSON.stringify(payload)});
+        hideModal(); renderPeople(); refreshContext();
+      };
+      if (person) $("#deletePersonBtn").onclick = async () => {
+        await api(`/api/people/${person.id}`, {method: "DELETE"});
+        hideModal(); renderPeople(); refreshContext();
+      };
+    }
+
+    async function renderDashboard() {
+      const data = await api("/api/dashboard");
+      state.dashboard = data;
+      $("#viewToolbar").innerHTML = `<button class="btn" id="refreshDashboardBtn">Frissítés</button>`;
+      $("#refreshDashboardBtn").onclick = renderDashboard;
+      $("#view-attekinto").innerHTML = `
+        <div class="grid four">
+          <div class="panel"><h3>Nyitott feladatok</h3><strong>${data.counts.open_tasks}</strong></div>
+          <div class="panel"><h3>7 napon belül</h3><strong>${data.counts.upcoming_deadlines}</strong></div>
+          <div class="panel"><h3>Döntések</h3><strong>${data.counts.decisions}</strong></div>
+          <div class="panel"><h3>Káosz-index</h3><strong>${data.counts.chaos_index}</strong></div>
+        </div>
+        <div class="split" style="margin-top:14px">
+          <div class="panel"><h3>Sürgős feladatok</h3><div class="stack">${(data.urgent_tasks || []).map(renderTaskCard).join("") || "<span class='muted small'>Nincs.</span>"}</div></div>
+          <div class="panel"><h3>Utolsó meetingek</h3><div class="stack">${(data.recent_meetings || []).map(m => `<div class="result-card">${escapeHtml(m.title || "Meeting")}<br><span class="muted small">${escapeHtml(m.summary || "")}</span></div>`).join("") || "<span class='muted small'>Nincs.</span>"}</div></div>
+        </div>
+      `;
+    }
+
+    async function renderSettings() {
+      const settings = await api("/api/settings");
+      const tags = await api("/api/ollama/tags").catch(() => ({models: []}));
+      const adapter = await api("/api/peft-adapter/health").catch(() => ({online: false, path_exists: false}));
+      $("#viewToolbar").innerHTML = `<button class="btn accent" id="saveSettingsBtn">Mentés</button>`;
+      $("#view-beallitasok").innerHTML = `
+        <div class="grid two">
+          <div class="panel stack">
+            <h3>Modellek</h3>
+            <div class="field"><label>Ollama host URL</label><input id="ollamaHost" value="${escapeHtml(settings.ollama_host || "http://127.0.0.1:11434")}"></div>
+            <div class="field"><label>Chat modell</label><input id="chatModel" list="ollamaModels" value="${escapeHtml(settings.chat_model || "qwen3:14b")}"></div>
+            <div class="field"><label>Fallback modell</label><input id="fallbackModel" list="ollamaModels" value="${escapeHtml(settings.fallback_model || "qwen2.5:14b")}"></div>
+            <div class="field"><label>Saját 4B modell</label><input id="custom4bModel" list="ollamaModels" value="${escapeHtml(settings.custom_4b_model || "hok-ai-jegyzokonyv-4b")}"></div>
+            <div class="field"><label>Jegyzőkönyv modell</label><input id="minutesModel" list="ollamaModels" value="${escapeHtml(settings.minutes_model || settings.custom_4b_model || "hok-ai-jegyzokonyv-4b")}"></div>
+            <div class="field"><label>Meeting JSON modell</label><input id="meetingModel" list="ollamaModels" value="${escapeHtml(settings.meeting_model || settings.chat_model || "qwen3:14b")}"></div>
+            <div class="field"><label>Fájl feldolgozó modell</label><input id="fileModel" list="ollamaModels" value="${escapeHtml(settings.file_model || "qwen2.5:7b-instruct")}"></div>
+            <div class="field"><label>Embedding modell</label><input id="embeddingModel" list="ollamaModels" value="${escapeHtml(settings.embedding_model || "nomic-embed-text")}"></div>
+            <datalist id="ollamaModels">${(tags.models || []).map(name => `<option value="${escapeHtml(name)}"></option>`).join("")}</datalist>
+            <div class="small muted">PEFT adapter: ${adapter.online ? "online" : "offline"} · path: ${adapter.path_exists ? "OK" : "hianyzik"}</div>
+          </div>
+          <div class="panel stack">
+            <h3>Lokális működés</h3>
+            <div class="field"><label>PEFT adapter</label><select id="peftAdapterEnabled"><option value="true" ${settings.peft_adapter_enabled !== "false" ? "selected" : ""}>bekapcsolva</option><option value="false" ${settings.peft_adapter_enabled === "false" ? "selected" : ""}>kikapcsolva</option></select></div>
+            <div class="field"><label>PEFT worker URL</label><input id="peftAdapterUrl" value="${escapeHtml(settings.peft_adapter_url || "http://127.0.0.1:7843")}"></div>
+            <div class="field"><label>PEFT adapter path</label><input id="peftAdapterPath" value="${escapeHtml(settings.peft_adapter_path || "hok_ai/data/models/hok-ai-domain-4b-peft")}"></div>
+            <div class="field"><label>Whisper modell</label><select id="whisperModel">${["tiny", "base", "small"].map(m => `<option ${settings.whisper_model === m ? "selected" : ""}>${m}</option>`).join("")}</select></div>
+            <div class="field"><label>Figyelt mappa</label><input id="watchedFolder" value="${escapeHtml(settings.watched_folder || "")}"></div>
+            <div class="field"><label>Határidő-értesítők</label><select id="notificationsEnabled"><option value="true" ${settings.notifications_enabled === "true" ? "selected" : ""}>bekapcsolva</option><option value="false" ${settings.notifications_enabled !== "true" ? "selected" : ""}>kikapcsolva</option></select></div>
+            <div class="field"><label>Magyar szótár</label><select id="hunspellEnabled"><option value="true" ${settings.hunspell_enabled === "true" ? "selected" : ""}>bekapcsolva</option><option value="false" ${settings.hunspell_enabled !== "true" ? "selected" : ""}>kikapcsolva</option></select></div>
+            <div class="field"><label>Adatbázis</label><input disabled value="hok_ai/data/hok_ai.sqlite"></div>
+          </div>
+        </div>
+      `;
+      $("#saveSettingsBtn").onclick = async () => {
+        await api("/api/settings", {method: "PUT", body: JSON.stringify({
+          ollama_host: $("#ollamaHost").value,
+          chat_model: $("#chatModel").value,
+          fallback_model: $("#fallbackModel").value,
+          custom_4b_model: $("#custom4bModel").value,
+          minutes_model: $("#minutesModel").value,
+          meeting_model: $("#meetingModel").value,
+          file_model: $("#fileModel").value,
+          embedding_model: $("#embeddingModel").value,
+          peft_adapter_enabled: $("#peftAdapterEnabled").value,
+          peft_adapter_url: $("#peftAdapterUrl").value,
+          peft_adapter_path: $("#peftAdapterPath").value,
+          whisper_model: $("#whisperModel").value,
+          watched_folder: $("#watchedFolder").value,
+          notifications_enabled: $("#notificationsEnabled").value,
+          hunspell_enabled: $("#hunspellEnabled").value
+        })});
+        refreshHealth();
+      };
+    }
+
+    function showModal() { $("#modalBackdrop").classList.add("visible"); }
+    function hideModal() { $("#modalBackdrop").classList.remove("visible"); }
+
+    $("#sendBtn").onclick = sendChat;
+    $("#attachFileBtn").onclick = () => $("#chatFileInput").click();
+    $("#chatFileInput").onchange = () => {
+      state.chatFile = $("#chatFileInput").files[0] || null;
+      renderAttachedFile();
+    };
+    $("#chatInput").addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendChat();
+      }
+    });
+    $("#thinkBtn").onclick = () => {
+      state.think = !state.think;
+      $("#thinkBtn").classList.toggle("accent", state.think);
+    };
+    $("#newChatBtn").onclick = () => { $("#messages").innerHTML = ""; setView("chat"); };
+    $("#refreshContextBtn").onclick = refreshContext;
+    $("#modalBackdrop").addEventListener("click", event => { if (event.target.id === "modalBackdrop") hideModal(); });
+
+    initNav();
+    refreshHealth();
+    refreshContext();
+    setInterval(refreshHealth, 15000);
+  </script>
+</body>
+</html>

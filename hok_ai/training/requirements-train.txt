@@ -1,0 +1,8 @@
+unsloth
+datasets
+trl
+accelerate
+bitsandbytes
+sentencepiece
+protobuf
+transformers
