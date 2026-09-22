@@ -1,8 +1,8 @@
 # HOK AI Demo
 
-Lokalis, dokumentumalapu HOK/EHOK adminisztracios asszisztens demo. A projekt celja, hogy egy hallgatoi onkormanyzati munkakornyezetben hasznos, forrasalapu AI asszisztenst adjon: dokumentumokat indexel, ezekbol valaszol, meetingjegyzeteket elemez, feladatokat es donteseket emel ki, majd egy egyszeru webes feluleten tamogatja az adminisztrativ munkat.
+Lokalis, dokumentumalapu adminisztracios asszisztens demo. A projekt celja, hogy egy adott munkakornyezetben hasznos, forrasalapu AI asszisztenst adjon: dokumentumokat indexel, ezekbol valaszol, meetingjegyzeteket elemez, feladatokat es donteseket emel ki, majd egy egyszeru webes feluleten tamogatja az adminisztrativ munkat.
 
-Ez a repository publikus demonak van tisztitva. Nem tartalmaz valos HOK/EHOK dokumentumokat, adatbazist, feltoltott fajlokat, modellcheckpointeket, API kulcsokat vagy szemelyes adatokat.
+Ez a repository publikus demonak van tisztitva. Nem tartalmaz valos dokumentumokat, adatbazist, feltoltott fajlokat, modellcheckpointeket, API kulcsokat vagy szemelyes adatokat.
 
 ## Tartalom
 
@@ -513,7 +513,7 @@ Kozep tav:
 
 Hosszu tav:
 
-- teljes lokalis HOK-admin tudastar,
+- teljes lokalis tudastar,
 - szerkesztheto dontestar,
 - Excel sablonmemoria,
 - auditalhato tanulasi naplo,
@@ -525,4 +525,4 @@ Ez demoprojekt, nem hivatalos jogi vagy szabalyzati donteshozo rendszer. A valas
 
 ## Licenc
 
-Licenc meg nincs megadva. Publikus GitHub hasznalat elott erdemes valasztani egy megfelelo licencet, peldaul MIT vagy Apache-2.0, ha nyilt forraskent szeretned kiadni.
+Licenc meg nincs megadva. Publikus GitHub hasznalat elott erdemes valasztani egy megfelelo licencet, peldaul MIT vagy Apache-2.0, ha nyilt forraskent szeretnenk kiadni.
