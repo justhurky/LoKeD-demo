@@ -24,7 +24,7 @@ Ez a repository publikus demonak van tisztitva. Nem tartalmaz valos dokumentumok
 
 ## Roviden
 
-A HOK AI Demo egy offline-first RAG asszisztens. A RAG jelentese: Retrieval-Augmented Generation, vagyis a modell nem csak altalanos tudasbol valaszol, hanem eloszor keres a lokalis dokumentumtarban, majd a megtalalt forrasreszletekre epiti a valaszt.
+A LoKeD Demo egy offline-first RAG asszisztens. A RAG jelentese: Retrieval-Augmented Generation, vagyis a modell nem csak altalanos tudasbol valaszol, hanem eloszor keres a lokalis dokumentumtarban, majd a megtalalt forrasreszletekre epiti a valaszt.
 
 Tipikus feladatok:
 
