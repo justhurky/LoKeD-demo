@@ -1,4 +1,4 @@
-# HOK AI Demo
+# LoKeD Demo
 
 Lokalis, dokumentumalapu adminisztracios asszisztens demo. A projekt celja, hogy egy adott munkakornyezetben hasznos, forrasalapu AI asszisztenst adjon: dokumentumokat indexel, ezekbol valaszol, meetingjegyzeteket elemez, feladatokat es donteseket emel ki, majd egy egyszeru webes feluleten tamogatja az adminisztrativ munkat.
 
